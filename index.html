@@ -1,21 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>スマホ対応メモアプリ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: sans-serif; padding: 10px; background: #f4f4f4; }
+  #input-area { display: flex; gap: 5px; margin-bottom: 10px; }
+  input[type="text"] { flex: 1; padding: 10px; font-size: 16px; }
+  button { padding: 10px; font-size: 16px; }
+  .note { background: white; padding: 10px; margin-bottom: 10px; border-radius: 5px; word-break: break-word; }
+  iframe { width: 100%; height: 200px; margin-top: 5px; }
+  img { max-width: 100%; display: block; margin-top: 5px; }
+  .delete-btn { float: right; cursor: pointer; color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h2>スマホ対応メモアプリ</h2>
+
+<div id="input-area">
+  <input type="text" id="memo-input" placeholder="テキスト・YouTube・画像URL">
+  <button id="add-btn">追加</button>
+</div>
+
+<div id="notes"></div>
+
+<script>
 function createNote(text) {
     const noteDiv = document.createElement('div');
     noteDiv.className = 'note';
-
+    
     const delBtn = document.createElement('span');
     delBtn.className = 'delete-btn';
     delBtn.textContent = '×';
     delBtn.onclick = () => noteDiv.remove();
     noteDiv.appendChild(delBtn);
-
-    // YouTube正規表現
-    const ytRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/;
-    const shortYtRegex = /(?:https?:\/\/)?youtu\.be\/([\w-]+)/;
-
+    
+    const ytRegex = /https?:\/\/(www\.)?youtube\.com\/watch\?v=([\w-]+)/;
+    const shortYtRegex = /https?:\/\/youtu\.be\/([\w-]+)/;
+    
     let youtubeId = null;
-    if (ytRegex.test(text)) youtubeId = text.match(ytRegex)[1];
-    else if (shortYtRegex.test(text)) youtubeId = text.match(shortYtRegex)[1];
-
+    
+    if (ytRegex.test(text)) {
+        youtubeId = text.match(ytRegex)[2];
+    } else if (shortYtRegex.test(text)) {
+        youtubeId = text.match(shortYtRegex)[1];
+    }
+    
     if (youtubeId) {
         const iframe = document.createElement('iframe');
         iframe.src = `https://www.youtube.com/embed/${youtubeId}`;
@@ -23,7 +55,7 @@ function createNote(text) {
         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
         noteDiv.appendChild(iframe);
-    } else if (text.match(/\.(jpeg|jpg|gif|png)(\?.*)?$/i)) {
+    } else if (text.match(/\.(jpeg|jpg|gif|png)$/)) {
         const img = document.createElement('img');
         img.src = text;
         noteDiv.appendChild(img);
@@ -32,6 +64,24 @@ function createNote(text) {
         p.textContent = text;
         noteDiv.appendChild(p);
     }
-
+    
     document.getElementById('notes').prepend(noteDiv);
 }
+
+document.getElementById('add-btn').addEventListener('click', () => {
+    const input = document.getElementById('memo-input');
+    const text = input.value.trim();
+    if (text) createNote(text);
+    input.value = '';
+});
+
+document.getElementById('memo-input').addEventListener('keydown', function(e){
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('add-btn').click();
+    }
+});
+</script>
+
+</body>
+</html>
