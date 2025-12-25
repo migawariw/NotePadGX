@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>メモアプリ（YouTube対応）</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+  #memo { width: 100%; height: 300px; padding: 10px; border: 1px solid #ccc; }
+  .note { background: white; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+  iframe { display: block; margin-top: 10px; width: 320px; height: 180px; }
+  img { max-width: 100%; display: block; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h2>メモアプリ（YouTube対応）</h2>
+
+<textarea id="memo" placeholder="ここにテキスト、YouTubeリンク、画像URLを貼ってください"></textarea>
+<div id="notes"></div>
+
+<script>
+function createNote(text) {
+    const noteDiv = document.createElement('div');
+    noteDiv.className = 'note';
+    
+    // YouTubeリンクの自動検出
+    const ytRegex = /https?:\/\/(www\.)?youtube\.com\/watch\?v=([\w-]+)/;
+    const shortYtRegex = /https?:\/\/youtu\.be\/([\w-]+)/;
+    
+    let youtubeId = null;
+    
+    if (ytRegex.test(text)) {
+        youtubeId = text.match(ytRegex)[2];
+    } else if (shortYtRegex.test(text)) {
+        youtubeId = text.match(shortYtRegex)[1];
+    }
+    
+    if (youtubeId) {
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${youtubeId}`;
+        iframe.frameBorder = 0;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+        noteDiv.appendChild(iframe);
+    } else if (text.match(/\.(jpeg|jpg|gif|png)$/)) {
+        // 画像URLなら画像表示
+        const img = document.createElement('img');
+        img.src = text;
+        noteDiv.appendChild(img);
+    } else {
+        // それ以外は普通のテキスト
+        noteDiv.textContent = text;
+    }
+    
+    document.getElementById('notes').appendChild(noteDiv);
+}
+
+// Enterで追加
+document.getElementById('memo').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const text = this.value.trim();
+        if (text) createNote(text);
+        this.value = '';
+    }
+});
+</script>
+
+</body>
+</html>
